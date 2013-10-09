@@ -1,0 +1,7 @@
+<WebAccess version="11.0">
+  <plugin moreinfo="https://github.com/fandijunior/TFSWebCustomControls" name="RichEditor Expander" vendor="Eimar Fandino" version="0.0.0.1">
+    <modules>
+      <module kind="TFS.WorkItem.CustomControl" namespace="RichEditor"></module>      
+    </modules>
+  </plugin>
+</WebAccess>
