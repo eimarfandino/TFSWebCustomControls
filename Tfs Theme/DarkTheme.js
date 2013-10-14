@@ -23,5 +23,5 @@ $(function() {
         head.appendChild(newCss);
     }
     
-    addCss ('* { background-color: #1E1E1E ! important; color:#ffffff !important}' );
+    addCss ('div, label { background-color: #1E1E1E ! important; color:#ffffff !important}' );
 });
