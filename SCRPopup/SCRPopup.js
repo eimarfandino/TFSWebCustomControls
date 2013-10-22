@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name       SCR popup2
+// @name       SCR popup
 // @namespace  TFS
 // @version    0.0.1
 // @description  Enable drag and drop in the workitems
 // @match       http://tfs.irdeto.intra:8080(.*)/_workitems
+// @match       https://tfs.irdeto.com(.*)/_workitems
 // @grant       GM_deleteValue
 // @grant       GM_getValue
 // @grant       GM_setValue
