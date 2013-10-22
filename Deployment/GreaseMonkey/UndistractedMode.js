@@ -4,6 +4,7 @@
 // @version    0.1.4
 // @description  Adds a toggle instead off TFS logo that hides some toolbars
 // @match       http://tfs.irdeto.intra:8080/*
+// @match       https://tfs.irdeto.com/*
 // @version     2.0
 // @grant       GM_deleteValue
 // @grant       GM_getValue
