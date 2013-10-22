@@ -1,3 +1,17 @@
+// ==UserScript==
+// @name       Undistracted mode
+// @namespace  TFS
+// @version    0.0.1
+// @description  Enable drag and drop in the workitems
+// @match       http://tfs.irdeto.intra:8080(.*)
+// @match       https://tfs.irdeto.com(.*)
+// @grant       GM_deleteValue
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @copyright  2013, Eimar Fandino
+// @run-at document-end
+// ==/UserScript==
+
 var $ = unsafeWindow.jQuery;
 
 $(window).load(function() {
