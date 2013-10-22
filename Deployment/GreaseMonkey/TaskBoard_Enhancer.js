@@ -1,9 +1,8 @@
 // ==UserScript==
 // @name        TaskBoard Enhancer
 // @description Making the task board of TFS a little better.
-// @downloadURL https://userscripts.org/scripts/source/169344.user.js
-// @updateURL   https://userscripts.org/scripts/source/169344.user.js
-// @match       http://tfs.irdeto.intra:8080/*
+// @match       http://tfs.irdeto.intra:8080/tfs/*/*/*/_boards
+// @match       https://tfs.irdeto.com/tfs/*/*/*/_boards
 // @version     7.3
 // @grant       GM_deleteValue
 // @grant       GM_getValue
@@ -118,8 +117,8 @@ function addMenu() {
     var separator = createMenuElement(null, "|", null, null);
     menu.append(separator);
 
-    var menuItem = createMenuElement(EXPORT_MENU_ID, EXPORT_MENU_TEXT, EXPORT_MENU_TITLE, exportAction);
-    menu.append(menuItem);
+/*    var menuItem = createMenuElement(EXPORT_MENU_ID, EXPORT_MENU_TEXT, EXPORT_MENU_TITLE, exportAction);
+    menu.append(menuItem);*/
 }
 
 function createMenuElement(id, text, title, listener) {
@@ -158,7 +157,7 @@ function modifyTileColors(loop) {
      var tiles = document.getElementsByClassName("tbTileContent");
      var username = getUser();
      var doHighlighting = isHighlighting();
-    
+
      for (var i = 0; i < tiles.length; i++) {
           var tile = tiles[i];
          
@@ -235,7 +234,7 @@ function setTaskTitles(loop) {
      for (var i = 0; i < tiles.length; i++) {
           var tile = tiles[i];
           var id = tile.parentElement.id.substring(5);
-         
+          
           tile.title = tile.getElementsByClassName("witTitle")[0].innerHTML;
      }
 
@@ -381,7 +380,7 @@ function iterateRows(rowAction) {
 }
 
 function markRowAsToDo(summaryRow) {
-    summaryRow.cells[1].style.backgroundColor = "#FFFFFF";
+    //summaryRow.cells[1].style.backgroundColor = "#FFFFFF";
 }
 
 function markRowAsInProgress(row, summaryRow) {
@@ -400,153 +399,91 @@ function markRowAsInProgress(row, summaryRow) {
         }
     }
 
-    summaryRow.cells[1].style.backgroundColor = "#DCE6F4";
+    summaryRow.cells[1].style.backgroundColor = "#ff0000";
 }
 
 function markRowAsDone(summaryRow) {
     summaryRow.cells[1].style.backgroundColor = "#DDFFDD";
 }
 
-
-// ========== EXPORTING FEATURES AND TASKS ==========
-
-function exportAction() {
-    var exportJson = {
-            "boardTitle": document.getElementsByClassName("hub-title")[0].childNodes[4].textContent.trim(),
-            "exportDateTime": new Date().toJSON(),
-            "features": getFeatures()
-        };
-    
-    var win = window.open();
-    win.document.write("<pre>" + JSON.stringify(exportJson, null, 4) + "</pre>");
-}
-
-function getFeatures() {
-    var featuresJson = [];
-
-    var board = document.getElementById("taskboard-table");
-    
-    if (board == null) return;
-    
-    for (var rowIndex = 1; rowIndex < board.rows.length; rowIndex += 2) {
-        var row = board.rows[rowIndex];
-        var featureJson = {};
-        
-        featureJson.title = row.children[1].children[0].children[0].children[0].textContent;
-        featureJson.tasks = getTasks(row);
-        
-        featuresJson.push(featureJson);
-    }
-
-    return featuresJson;
-}
-
-function getTasks(row) {
-    var tasks = [];
-
-    addTasks(tasks, row, 2, "To do");
-    addTasks(tasks, row, 3, "In progress");
-    addTasks(tasks, row, 4, "Done");
-    
-    return tasks;
-}
-
-function addTasks(tasks, row, colIndex, state) {
-    var taskDivs = row.children[colIndex].getElementsByClassName("tbTileContent");
-    
-    for (var i = 0; i < taskDivs.length; i++) {
-        var taskDiv = taskDivs[i];
-        var taskJson = {};
-        
-        taskJson.title = taskDiv.title;
-        taskJson.assignedTo = taskDiv.children[1].children[1].textContent;
-        taskJson.remainingWork = taskDiv.children[1].children[0].textContent;
-        taskJson.state = state;
-        
-        tasks.push(taskJson);
-    }
-}
-
-
 // ========== COMMON TASK NAMES ==========
 
+function setUserStoryIdInTitle(row, ids) {
+    var us_id = 0;
+    var title_row = row.find(".clickableTitle");
+    if(title_row.attr("class") != null) {
+        var parent = row.parents(".taskboard-parent");
+        if(parent.attr("id") != null) {
+            if(title_row.html().indexOf(' | ') == -1) {
+                us_id = parent.attr("id").replace("taskboard-table_p","");
+                title_row.text(us_id + " | " +title_row.html());
+            }
+        }
+    }
+    
+    return us_id;
+}
+
+function higlightBlockedUserStory(us_id, row) {
+    if(us_id != 0 ) {
+        row.parents(".taskboard-row").css('background','');
+        row.parents(".taskboard-row").next().find(".taskboard-parent").css('background','');
+        row.parents(".taskboard-row").next().css('background','');
+        $.ajax({
+                url: 'http://tfs.irdeto.intra:8080/tfs/DefaultCollection/_api/_wit/workitems?__v=3&ids=' + us_id,
+                type: 'GET',
+                dataType: 'json',
+                 xhrFields: {
+                withCredentials: true
+                },
+                dataType: 'json',
+                success: function(data, status) {
+                    var content = 'yeah';
+                    $.each(data.__wrappedArray, function (index, value) {
+                        $.each(value, function (index, value) {
+                            if(index == "fields") {
+                                $.each(value, function (index, value) {
+                                    if(index == "80") {
+                                        if(value.toLowerCase().indexOf("blocked") != -1) {
+                                            row.parents(".taskboard-row").css("display","none");
+                                            row.parents(".taskboard-row").next().css("display","");
+                                            row.parents(".taskboard-row").next().css('background','#FF8585');
+                                            row.parents(".taskboard-row").next().find(".taskboard-parent").css('background','#FF8585');
+                                            row.parents(".taskboard-row").css('background','#FF8585');
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+           });
+       }
+}
+    
 function addListeners() {
-    var rows = document.getElementsByClassName("taskboard-row");
+    //Set US number on title
+    var rows = $(".tbPivotItem");
+    rows.each(function() {
+        var row = $(this);
+        var us_id = setUserStoryIdInTitle($(this),"0");
+        higlightBlockedUserStory(us_id, row);
+    });
     
-    // Skipping the first row because that is the header row.
-    for (var i = 1; i < rows.length; i += 2) {
-        var row = rows[i];
-        var addBtn = row.getElementsByClassName("icon-add")[0];
-        addBtn.addEventListener("click", function() {
-            setTimeout(function() {
-                waitForAddTaskDialogToLoad();
-            }, TIMEOUT);
+    var modified = false;
+    $('.clickableTitle').bind("DOMSubtreeModified",function() { 
+        DOMModified($(this)) 
         });
-    }
-
 }
 
-function waitForAddTaskDialogToLoad() {
-    var l = document.getElementsByClassName("workitem-dialog").length;
-    
-    if (l == 0) {
-        setTimeout(function() {
-                waitForAddTaskDialogToLoad();
-        }, TIMEOUT);
-    }
-    else {
-        modifyAddTaskDialog();
-    }
-}
 
-function modifyAddTaskDialog() {
-    var dialog = document.getElementsByClassName("workitem-dialog")[0];
-
-    var selectElement = document.createElement("select");
-    selectElement.onchange=function() {
-        var title = COMMON_TASKS[this.selectedIndex].title;
-        var work = COMMON_TASKS[this.selectedIndex].work;
+function DOMModified(title) {
+    $('.clickableTitle').unbind("DOMSubtreeModified",null);
+    var rows1 = $(title).parents(".tbPivotItem");
+    var us_id1 = setUserStoryIdInTitle(rows1,"2");
+    higlightBlockedUserStory(us_id1, rows1);
+    $('.clickableTitle').bind("DOMSubtreeModified",function() { 
+        DOMModified($(this)) 
+        });
         
-        var titleInput = dialog.getElementsByTagName("input")[1];
-        var workInput = dialog.getElementsByTagName("input")[7];
-        
-        if (this.selectedIndex == 0) {
-            titleInput.parentElement.parentElement.classList.add("invalid");
-            titleInput.classList.add("watermark");
-            titleInput.value = "<Enter title here>";
-            
-            workInput.value = "";
-        }
-        else {
-            titleInput.parentElement.parentElement.classList.remove("invalid");
-            titleInput.classList.remove("watermark");
-            titleInput.value = title;
-
-            workInput.value = work;
-        }
-
-        if ("createEvent" in document) {
-            var evt = document.createEvent("HTMLEvents");
-            evt.initEvent("change", false, true);
-            titleInput.dispatchEvent(evt);
-        }
-        else {
-            titleInput.fireEvent("onchange");
-        }        
-    };
-
-    for (var i = 0; i < COMMON_TASKS.length; i++) {
-        var optionElement = document.createElement("option");
-        optionElement.value = i;
-        optionElement.appendChild(document.createTextNode(COMMON_TASKS[i].title));
-        
-        selectElement.appendChild(optionElement);
-    }
-
-    var divElement = document.createElement("div");
-    divElement.style.cssFloat = "right";
-    divElement.appendChild(selectElement);
-
-    var tfsTags = dialog.getElementsByClassName("tfs-tags")[0];
-    tfsTags.insertBefore(divElement, tfsTags.lastChild);
 }
