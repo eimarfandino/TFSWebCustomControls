@@ -380,7 +380,7 @@ function iterateRows(rowAction) {
 }
 
 function markRowAsToDo(summaryRow) {
-    //summaryRow.cells[1].style.backgroundColor = "#FFFFFF";
+    changeRowColor(summaryRow.cells[1], "#FFFFFF");
 }
 
 function markRowAsInProgress(row, summaryRow) {
@@ -394,18 +394,25 @@ function markRowAsInProgress(row, summaryRow) {
         var assignedTo = tile.getElementsByClassName("witAssignedTo")[0].firstChild.innerHTML;
 
         if (doHighlighting && username == assignedTo) {
-            summaryRow.cells[1].style.backgroundColor = "#FFFFC0";
+            changeRowColor(summaryRow.cells[1], "#FFFFC0");
             return;
         }
     }
-
-    summaryRow.cells[1].style.backgroundColor = "#ff0000";
+    
+    changeRowColor(summaryRow.cells[1], "#ff0000");
 }
 
 function markRowAsDone(summaryRow) {
-    summaryRow.cells[1].style.backgroundColor = "#DDFFDD";
+    //#FF8585
+    changeRowColor(summaryRow.cells[1], "#DDFFDD");
 }
 
+
+function changeRowColor(row, color) {
+    if(row.style.backgroundColor != 'rgb(255, 133, 133)') { 
+        row.style.backgroundColor = color;        
+    }
+}
 // ========== COMMON TASK NAMES ==========
 
 function setUserStoryIdInTitle(row, ids) {
