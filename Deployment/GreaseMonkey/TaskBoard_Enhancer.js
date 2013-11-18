@@ -383,6 +383,7 @@ function markRowAsToDo(summaryRow) {
     changeRowColor(summaryRow.cells[1], "#FFFFFF");
 }
 
+
 function markRowAsInProgress(row, summaryRow) {
     var tiles = row.getElementsByClassName("tbTileContent");
     var username = getUser();
