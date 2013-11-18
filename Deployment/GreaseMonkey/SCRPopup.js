@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name       SCR popup
+// @name       SCR Quick View
 // @namespace  TFS
-// @version    0.0.1
+// @version    0.0.2
 // @description  Enable drag and drop in the workitems
 // @match       http://tfs.irdeto.intra:8080(.*)/_workitems
-// @match       https://tfs.irdeto.com(.*)/_workitems
+// @match 		    http://tfs.irdeto.intra:8080/tfs/*/*/*/_workitems
 // @grant       GM_deleteValue
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -15,6 +15,7 @@
 // ========== DEFINING CONSTANTS ==========
 var $ = unsafeWindow.jQuery;
 var ICON_OFFSET = 70;
+var URI = "";
 
 $(window).load(function() 
  {
@@ -26,6 +27,9 @@ $(window).load(function()
             if($("#quickView").attr("class") == null) {
                 $('<li id="quickView" class="menu-item">Enable Quick View</li>').insertAfter(last_col);
                 $('<li class="menu-item menu-item-separator disabled"><div class="separator"></div></li>').insertAfter(last_col);
+                
+                var json = jQuery.parseJSON( $(".tfs-context").html() );
+                URI = json.navigation.collection.uri;
             }
         }
     });
@@ -64,7 +68,7 @@ $(window).load(function()
         if(enabled) {
             var scrid = $(this).children().first().attr("title");
             $.ajax({
-                url: 'http://tfs.irdeto.intra:8080/tfs/DefaultCollection/_api/_wit/workitems?__v=3&ids=' + scrid,
+                url: URI + '/_api/_wit/workitems?__v=3&ids=' + scrid,
                 type: 'GET',  
                 dataType: 'json',
                  xhrFields: {
@@ -72,7 +76,6 @@ $(window).load(function()
                 },
                 dataType: 'json',
                 success: function(data, status) {
-                    var content = 'yeah';
                     $.each(data.__wrappedArray, function (index, value) {
                         $.each(value, function (index, value) {
                             if(index == "fields") {
@@ -95,11 +98,7 @@ $(window).load(function()
                             
                         });
                     });
-                },
-                
-                error:function(xhr,status,error) { 
-                    var content = 'error';
-                } 
+                }
            });
        }
    });
