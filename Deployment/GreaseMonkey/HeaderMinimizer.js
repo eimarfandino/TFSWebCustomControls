@@ -1,16 +1,13 @@
 // ==UserScript==
-// @name       Undistract Mode for TFS 2012
-// @namespace  http://gurianov.com/userscripts
-// @version    0.1.4
+// @name       Header Minimizer
 // @description  Adds a toggle instead off TFS logo that hides some toolbars
 // @match       http://tfs.irdeto.intra:8080/*
-// @match       https://tfs.irdeto.com/*
 // @version     2.0
 // @grant       GM_deleteValue
 // @grant       GM_getValue
 // @grant       GM_setValue
+// @copyright  2013, Eimar Fandino
 // @run-at document-end
-// @copyright  2013, Alexey Gurianov
 // ==/UserScript==
 
 // ========== DEFINING CONSTANTS ==========
